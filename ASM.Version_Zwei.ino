@@ -1,4 +1,4 @@
-         //-----Andrew Spiewak ADXL355 Accelerometer 
+         //-----Alexander Mackey ADXL355 Accelerometer 
                        //-----2/13/19
                        
 #include <SPI.h>  //------------------------------------ library for SPI in arduino must be added to run SPI protocal.
