@@ -5,7 +5,7 @@ In addition to aquiring data from ADXL355 the code includes the ability to sampl
 
 This code should also work when using an EVAL-ADXL355-PMDZ
 
-This code was based upon code created by _____ that was unsucessful in our implementation. available here--
+This code was based upon code created by Gabriel Vidal that was unsucessful in our implementation. https://github.com/gpvidal/adxl355-arduino/blob/master/adxl355.ino
 
 The ADXL355 Technical documentation can be found here--
 ADXL355 chip--https://www.analog.com/media/en/technical-documentation/data-sheets/adxl354_355.pdf
