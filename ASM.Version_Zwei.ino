@@ -1,5 +1,5 @@
          //-----Alexander Mackey ADXL355 Accelerometer 
-                       //-----2/13/19
+                       //-----4/16/19
                        
 #include <SPI.h>  //------------------------------------ library for SPI in arduino must be added to run SPI protocal.
 // telling the arduino where to read/write, after assignment there is no options needed.
@@ -16,7 +16,7 @@ const int X_1 = 0x0A; //----------------------------------Bits 3,2,1,0 only will
 const int X_2 = 0x09; //----------------------------------We use all 8 bits at this location.
 const int X_3 = 0x08; //----------------------------------We use all 8 bits at this location.
 // We want to have the filter active
-const int FILTER = 0x28; //----------------------------This is the filter address.
+const int FILTER = 0x3; //----------------------------This is the filter address.
 const int SET_FILTER = 0x6A; //------------------------------This creates a bandpass (Table 43, pg. 37)
 // We want the Range to measure 2G and below.
 const int RANGE = 0x2C; //--------------------------------This is the address to set the range setting.
@@ -52,7 +52,7 @@ float ZCalibrationValue=0;
 
 // Now that our constants are set we can write the loop
 void setup() {
- Serial.begin(74880); //------------------------------------This sets the number of bits per second. (sampling frequency x 20 bits). BAUD
+ Serial.begin(250000); //------------------------------------This sets the number of bits per second. (sampling frequency x 20 bits). BAUD
  SPI.begin(); //--------------------------------------------This enables the Arduino SPI pin locations as follows... clock CLK is pin 13...MISO is pin 12...MOSI is pin 11.
  pinMode(ARD_PIN,OUTPUT); //--------------------------------Tells us pin 10 should be an output
 // Reset the device to make sure it starts clean
@@ -80,109 +80,6 @@ int axisdataSize = 3; //--------------------------------------------------------
 int XCalibrationStorage[CalibrationSamples];
 int YCalibrationStorage[CalibrationSamples];
 int ZCalibrationStorage[CalibrationSamples];
-
-// Read the data from the accelerometer and EMG
-readMultipleData(DataAddresses, dataSize,DataMeasures);
-int XDATA = (DataMeasures[2] >> 4) + (DataMeasures[1] << 4) + (DataMeasures[0] << 12);
-int YDATA = (DataMeasures[5] >> 4) + (DataMeasures[4] << 4) + (DataMeasures[3] << 12);
-int ZDATA = (DataMeasures[8] >> 4) + (DataMeasures[7] << 4) + (DataMeasures[6] << 12);
-int XTestValue = XDATA << 12;
-int YTestValue = YDATA << 12;
-int ZTestValue = ZDATA << 12;
-//Correct the sign of the data
-if (XTestValue < 0){
-  XDATA = XDATA+EXPANDSIGNSHIFTED;
-}
-if (YTestValue < 0){
-  YDATA = YDATA+EXPANDSIGNSHIFTED;
-}
-if (ZTestValue < 0){
-  ZDATA = ZDATA+EXPANDSIGNSHIFTED;
-}
-//get EMG Data
-analogReadResolution(12);
-int EMGDATA = ((analogRead(EMGPIN)*500)-800000);
-
-
-
-//get data capture rate
-microa = micros();
-rate = 1000000/(microa-microb);
-microb = microa;
-
-  if (CalibrationCheck == 0 ){
-   // Serial.println("Accelerometer is gathering initial data for calibration");
-    XCalibrationStorage[CalibrationCounter]=XDATA;
-    YCalibrationStorage[CalibrationCounter]=YDATA;
-    ZCalibrationStorage[CalibrationCounter]=ZDATA;
-    if (++CalibrationCounter == CalibrationSamples){
-      CalibrationCheck=1;
-    }}else if (CalibrationCheck == 1){
-    //Serial.println("Calibration has progressed to calculation stage");
-    for (int CalibrationCalculationCount=0; CalibrationCalculationCount < CalibrationSamples-10; CalibrationCalculationCount++){
-      CalculationStoragea = ((XCalibrationStorage[CalibrationCalculationCount])/(CalibrationSamples-10));
-      //Serial.print(CalibrationCalculationCount);
-      //Serial.print("\t");
-      //Serial.print(CalculationStoragea);
-      //Serial.print("\t");
-      CalculationStorageb = ((YCalibrationStorage[CalibrationCalculationCount])/(CalibrationSamples-10));
-      CalculationStoragec = ((ZCalibrationStorage[CalibrationCalculationCount])/(CalibrationSamples-10));
-      XCalibrationValue += CalculationStoragea;
-      //Serial.println(XCalibrationValue);
-      YCalibrationValue += CalculationStorageb;
-      ZCalibrationValue += CalculationStoragec;
-    }
-    Serial.print("The X-axis will be shifted by ");
-    Serial.println(XCalibrationValue);
-    Serial.print("The Y-axis will be shifted by ");
-    Serial.println(YCalibrationValue);
-    Serial.print("The Z-axis will be shifted by ");
-    Serial.println(ZCalibrationValue);
-    CalibrationCheck=2;
-  } /*else if (CalibrationCheck == 2){
-      Serial.println("Calibration has progressed to programming the device with obtained data");
-    Xshifta=;
-    Xshiftb=XCalibrationValue>>8;
-    Yshifta=;
-    Yshiftb=YCalibrationValue>>8;
-    Zshifta=;
-    Zshiftb=ZCalibrationValue>>8;
-    WriteRegister(Xshifta,Xoffset1);
-    WriteRegister(Xshifta,Xoffset2);
-    WriteRegister(Yshifta,Yoffset1);
-    WriteRegister(Yshifta,Yoffset2);
-    WriteRegister(Zshifta,Zoffset1);
-    WriteRegister(Zshifta,Zoffset2);
-    delay(100);
-  }*/else{
-    //print data to be read
-    //Serial.print("XDATA \t");
-   Serial.print(XDATA);
-    Serial.print("\t");
-    //Serial.print("YDATA \t");
-    Serial.print(YDATA);
-    Serial.print("\t");
-    //Serial.print("ZDATA \t");
-    Serial.print(ZDATA);
-    Serial.print("\t");
-    //Serial.print("Rate \t");
-    
-    //Serial.print(rate);
-    //Serial.print("\t EMGDATA \t");
-    Serial.print(EMGDATA);
-    Serial.print("\n");
-    /*XDATA-=XCalibrationValue;
-    YDATA-=YCalibrationValue;
-    ZDATA-=ZCalibrationValue;
-    
-    Serial.print("\t SHIFTED XDATA \t");
-    Serial.print(XDATA);
-    Serial.print("\t SHIFTED YDATA \t");
-    Serial.print(YDATA);
-    Serial.print("\t SHIFTED ZDATA \t");
-    Serial.print(ZDATA);
-    */
-  }
 
 /*readMultipleData(XaxisAddresses, axisdataSize, XaxisMeasures); //------------------------How to read the data
 // Merging split Data into one 
@@ -224,6 +121,59 @@ Serial.print(ZDATA);// -------------------------------------COMMENT OUT TO NOT G
 Serial.print("\n");
 //delay(.25);
 */
+
+
+
+
+
+// Read the data from the accelerometer and EMG
+readMultipleData(DataAddresses, dataSize,DataMeasures);
+int XDATA = (DataMeasures[2] >> 4) + (DataMeasures[1] << 4) + (DataMeasures[0] << 12);
+int YDATA = (DataMeasures[5] >> 4) + (DataMeasures[4] << 4) + (DataMeasures[3] << 12);
+int ZDATA = (DataMeasures[8] >> 4) + (DataMeasures[7] << 4) + (DataMeasures[6] << 12);
+int XTestValue = XDATA << 12;
+int YTestValue = YDATA << 12;
+int ZTestValue = ZDATA << 12;
+//Correct the sign of the data
+if (XTestValue < 0){
+  XDATA = XDATA+EXPANDSIGNSHIFTED;
+}
+if (YTestValue < 0){
+  YDATA = YDATA+EXPANDSIGNSHIFTED;
+}
+if (ZTestValue < 0){
+  ZDATA = ZDATA+EXPANDSIGNSHIFTED;
+}
+//get EMG Data
+analogReadResolution(12);
+int EMGDATA = ((analogRead(EMGPIN))*1000-1600000);
+
+
+
+//get data capture rate
+/*microa = micros();
+rate = 1000000/(microa-microb);
+microb = microa;
+*/
+    //print data to be read
+    //Serial.print("XDATA \t");
+    Serial.print(XDATA + 75000);
+    Serial.print("\t");
+    //Serial.print("YDATA \t");
+    Serial.print(YDATA);
+    Serial.print("\t");
+    //Serial.print("ZDATA \t");
+    Serial.print(ZDATA - 75000);
+    Serial.print("\t");
+    //Serial.print("Rate \t");
+    
+    //Serial.print(rate);
+    //Serial.print("\t EMGDATA \t");
+    Serial.print(EMGDATA);
+    Serial.print("\n");
+  
+
+
 
 
 
