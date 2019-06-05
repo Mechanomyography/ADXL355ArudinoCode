@@ -1,5 +1,5 @@
 # ADXL355ArudinoCode
-Included in this repository is a selection of code meant to be used with an EVAL-ADXL35X specifically the board for an ADXL355 and ArduinoDue 
+Included in this repository is a selection of code meant to be used with an EVAL-ADXL35X specifically the board for an ADXL355 and ArduinoDue for capturing a mechanomyography (MMG) signal.
 
 In addition to aquiring data from ADXL355 the code includes the ability to sample data from an EMG sensor. The EMG sensor We used was the (INSERT SENSOR HERE).
 
